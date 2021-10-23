@@ -2,6 +2,7 @@ package ma.talayBlog.TalayBlog.service;
 
 import lombok.AllArgsConstructor;
 import ma.talayBlog.TalayBlog.dto.RegisterRequest;
+import ma.talayBlog.TalayBlog.model.NotificationEmail;
 import ma.talayBlog.TalayBlog.model.User;
 import ma.talayBlog.TalayBlog.model.VerificationToken;
 import ma.talayBlog.TalayBlog.repository.UserRepository;
@@ -20,9 +21,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
+    private final MailService mailService;
 
     @Transactional
-    public void singup(RegisterRequest registerRequest){
+    public void signup(RegisterRequest registerRequest){
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());
@@ -33,6 +35,10 @@ public class AuthService {
         userRepository.save(user);
 
         String token = generateVerificationToken(user);
+        mailService.sendMail(new NotificationEmail("Please Activate your Account",
+                user.getEmail(), "Thank you for signing up to TallayBlog, " +
+                "please click on the below url to activate your account : " +
+                "http://localhost:8080/api/auth/accountVerification/" + token));
     }
 
     private String generateVerificationToken(User user) {
